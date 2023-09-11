@@ -16,19 +16,60 @@
 //
 
 import SwiftUI
+import CoreML
 
 struct ContentView: View {
     @State private var sleepAmount = 8.0
     @State private var wakeUp = Date.now
+    @State private var userLocale = Locale.autoupdatingCurrent
+    @State private var coffee = 1
+    @State private var timeToWake = Date.now
     
     var body: some View {
-        VStack {
-            Stepper("\(sleepAmount.formatted()) hours of sleep", value: $sleepAmount, in: 4...12, step: 0.25)
-            DatePicker("Pick Wake Up Time", selection: $wakeUp, in: Date.now...,displayedComponents: .hourAndMinute)
+        NavigationStack {
             
+            ScrollView {
+                
+                VStack {
+                    VStack(spacing: 20){
+            
+                        Text("What Time Would you like to wake up?")
+                            .font(.headline)
+                        
+                        DatePicker("Pick Wake Up Time", selection: $wakeUp, in: Date.now...,displayedComponents: .hourAndMinute)
+                                               .labelsHidden()
+                        
+                        Text("Desired Amount Of Sleep: ")
+                            .font(.headline)
+                        
+                        Stepper("\(sleepAmount.formatted()) hours of sleep", value: $sleepAmount, in: 4...12, step: 0.25)
+                        
+                        
+                   Text("How Many cups of ☕️?")
+                            .font(.headline)
+                        Stepper(coffee == 1 ? "☕️:  1":"☕️'s: \(coffee)", value: $coffee, in: 1...11)
+                    }
+                    .padding()
+                }
+            }
+            .navigationTitle("BetterRest")
+            .toolbar {
+                Button("Calculate", action: calculateBedTime)
+                    .buttonStyle(.bordered)
+                    .foregroundColor(.white)
+                    .background(.blue)
+                    .clipShape(Capsule())
+            }
         }
-        .padding()
     }
+    
+    
+    func calculateBedTime() {
+        
+    }
+    
+    
+    
 }
 
 struct ContentView_Previews: PreviewProvider {
