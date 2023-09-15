@@ -39,7 +39,7 @@ struct ContentView: View {
     @State private var alertTitle = ""
     @State private var alertMessage = ""
     @State private var showingAlert = false
-    
+   
     
     var body: some View {
         NavigationStack {
@@ -49,54 +49,43 @@ struct ContentView: View {
              
              */
             Form {
-                
-               
-                VStack(alignment: .leading, spacing: 0) {
-                    Text("What Time Would you like to wake up?")
-                        .font(.headline)
-                    
+                Section("What Time Would you like to wake up?"){
                     DatePicker("Pick Wake Up Time", selection: $wakeUp, displayedComponents: .hourAndMinute)
                         .labelsHidden()
                 }
-                VStack(alignment: .leading, spacing: 0){
-                    Text("Desired Amount Of Sleep: ")
-                        .font(.headline)
-                    
+                Section("Desired Amount Of Sleep"){
                     Stepper("\(sleepAmount.formatted()) hours of sleep", value: $sleepAmount, in: 4...12, step: 0.25)
                 }
-                
-                VStack(alignment: .leading, spacing: 0) {
-                    Text("How Many cups of ☕️?")
-                        .font(.headline)
+                Section("How Many cups of ☕️?") {
                     Stepper(coffeeAmount == 1 ? "☕️:  1":"☕️'s: \(coffeeAmount.formatted())", value: $coffeeAmount, in: 1...11)
                 }
-                
-                
-        
-                            .alert(alertTitle,isPresented: $showingAlert) {
-                                Button("Ok") {}
-                            } message: {
-                                Text(alertMessage)
-                            }
-                            .navigationTitle("BetterRest")
-                           .navigationBarTitleDisplayMode(.inline)
-                           .toolbar {
-                               Button("Calculate", action: calculateBedTime)
-                                   .buttonStyle(.bordered)
-                                   .foregroundColor(.white)
-                                   .background(.blue)
-                                   .clipShape(Capsule())
-                    }
-                    .padding()
-                
-            
-           
+    
+                Text("BedTime: \(calculateBedTime())")
+                    .font(.headline)
+                                
             }
+                    .padding()
+
+//                    .alert(alertTitle,isPresented: $showingAlert) {
+//                                              Button("Ok") {}
+//                                          } message: {
+//                                              Text(alertMessage)
+//                                          }
+                                          .navigationTitle("BetterRest")
+                                         .navigationBarTitleDisplayMode(.inline)
+//                                         .toolbar {
+//                                             Button("Calculate", action: calculateBedTime)
+//                                                 .buttonStyle(.bordered)
+//                                                 .foregroundColor(.white)
+//                                                 .background(.blue)
+//                                                 .clipShape(Capsule())
+//
+//            }
         }
     }
     
     
-    func calculateBedTime() {
+    func calculateBedTime() -> String{
         
         //Craeting an instance of the SleepCalculator class
         /*
@@ -115,13 +104,15 @@ struct ContentView: View {
             let prediction = try model.prediction(wake: Double(hour + minute), estimatedSleep: sleepAmount, coffee: Double(coffeeAmount))
             //subtracting the time they want to wake up with the amount of actual sleep
             let sleepTime = wakeUp - prediction.actualSleep
-            alertTitle = "your ideal bedtime is..."
-            alertMessage = sleepTime.formatted(date: .omitted, time: .shortened)
+           
+            return sleepTime.formatted(date: .omitted, time: .shortened)
         } catch {
-            alertTitle = "Error"
-            alertMessage = "Sorry, there was a problem calculating your bedtime"
+//            alertTitle = "Error"
+//            alertMessage = "Sorry, there was a problem calculating your bedtime"
+            return Date.now.formatted(date: .omitted, time: .shortened)
         }
-        showingAlert = true
+       // showingAlert = true
+        
         
     }
     
