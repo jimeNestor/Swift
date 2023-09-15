@@ -14,16 +14,22 @@
 //
 //  Created by Nestor Jimenez on 9/7/23.
 //
-
-import SwiftUI
 import CoreML
+import SwiftUI
+
 
 struct ContentView: View {
     @State private var sleepAmount = 8.0
     @State private var wakeUp = Date.now
     @State private var userLocale = Locale.autoupdatingCurrent
-    @State private var coffee = 1
+    @State private var coffeeAmount = 1.0
     @State private var timeToWake = Date.now
+    @State private var alertTitle = ""
+    @State private var alertMessage = ""
+    @State private var showingAlert = false
+    
+    
+    let gregorianCalendar = Calendar(identifier: .gregorian)
     
     var body: some View {
         NavigationStack {
@@ -36,7 +42,7 @@ struct ContentView: View {
                         Text("What Time Would you like to wake up?")
                             .font(.headline)
                         
-                        DatePicker("Pick Wake Up Time", selection: $wakeUp, in: Date.now...,displayedComponents: .hourAndMinute)
+                        DatePicker("Pick Wake Up Time", selection: $wakeUp, displayedComponents: .hourAndMinute)
                                                .labelsHidden()
                         
                         Text("Desired Amount Of Sleep: ")
@@ -47,12 +53,19 @@ struct ContentView: View {
                         
                    Text("How Many cups of ☕️?")
                             .font(.headline)
-                        Stepper(coffee == 1 ? "☕️:  1":"☕️'s: \(coffee)", value: $coffee, in: 1...11)
+                        Stepper(coffeeAmount == 1 ? "☕️:  1":"☕️'s: \(coffeeAmount)", value: $coffeeAmount, in: 1...11)
+                        
+                            .alert(alertTitle,isPresented: $showingAlert) {
+                                Button("Ok") {}
+                            } message: {
+                                Text(alertMessage)
+                            }
                     }
                     .padding()
                 }
             }
             .navigationTitle("BetterRest")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 Button("Calculate", action: calculateBedTime)
                     .buttonStyle(.bordered)
@@ -65,6 +78,31 @@ struct ContentView: View {
     
     
     func calculateBedTime() {
+        
+        //Craeting an instance of the SleepCalculator class
+        /*
+         we use the dp/catch blocks because openML can throw errors
+         1. when loading
+         2. when we ask for predictions
+         */
+        do {
+            let config = MLModelConfiguration() //this is here in the case we need to enable certain options
+            let model = try SleepCalculator(configuration: config) //this reads in all our data and will output a prediction
+            //using dateComponents with the current locale to take hours and minutes
+            let components = Calendar.current.dateComponents([.hour, .minute], from: wakeUp)
+            let hour = (components.hour ?? 0) * 60 * 60
+            let minute = (components.minute ?? 0) * 60
+            //feed the ML model:
+            let prediction = try model.prediction(wake: Double(hour + minute), estimatedSleep: sleepAmount, coffee: Double(coffeeAmount))
+            //subtracting the time they want to wake up with the amount of actual sleep
+            let sleepTime = wakeUp - prediction.actualSleep
+            alertTitle = "your ideal bedtime is..."
+            alertMessage = sleepTime.formatted(date: .omitted, time: .shortened)
+        } catch {
+            alertTitle = "Error"
+            alertMessage = "Sorry, there was a problem calculating your bedtime"
+        }
+        showingAlert = true
         
     }
     
