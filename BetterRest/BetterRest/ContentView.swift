@@ -19,59 +19,78 @@ import SwiftUI
 
 
 struct ContentView: View {
+    
+    /*
+     The computed property is static because if we set wakeUp to the defaultWakeTime, we are attempting to access one property from another.
+     - We need to make it static because it belongs to the ContentView Struct itself. rather than a single instance of the struct
+     
+     - this computed property is created so all our users have a set time.
+     */
+    static var defaultWakeTime: Date {
+        var component = DateComponents()
+        component.hour = 7
+        component.minute = 0
+        return Calendar.current.date(from: component) ?? Date.now
+    }
+    
     @State private var sleepAmount = 8.0
-    @State private var wakeUp = Date.now
-    @State private var userLocale = Locale.autoupdatingCurrent
+    @State private var wakeUp = defaultWakeTime
     @State private var coffeeAmount = 1.0
-    @State private var timeToWake = Date.now
     @State private var alertTitle = ""
     @State private var alertMessage = ""
     @State private var showingAlert = false
     
     
-    let gregorianCalendar = Calendar(identifier: .gregorian)
-    
     var body: some View {
         NavigationStack {
-            
-            ScrollView {
+         
+            /*
+             Form provides us with a clear segmented table
+             
+             */
+            Form {
                 
-                VStack {
-                    VStack(spacing: 20){
-            
-                        Text("What Time Would you like to wake up?")
-                            .font(.headline)
-                        
-                        DatePicker("Pick Wake Up Time", selection: $wakeUp, displayedComponents: .hourAndMinute)
-                                               .labelsHidden()
-                        
-                        Text("Desired Amount Of Sleep: ")
-                            .font(.headline)
-                        
-                        Stepper("\(sleepAmount.formatted()) hours of sleep", value: $sleepAmount, in: 4...12, step: 0.25)
-                        
-                        
-                   Text("How Many cups of ☕️?")
-                            .font(.headline)
-                        Stepper(coffeeAmount == 1 ? "☕️:  1":"☕️'s: \(coffeeAmount)", value: $coffeeAmount, in: 1...11)
-                        
+               
+                VStack(alignment: .leading, spacing: 0) {
+                    Text("What Time Would you like to wake up?")
+                        .font(.headline)
+                    
+                    DatePicker("Pick Wake Up Time", selection: $wakeUp, displayedComponents: .hourAndMinute)
+                        .labelsHidden()
+                }
+                VStack(alignment: .leading, spacing: 0){
+                    Text("Desired Amount Of Sleep: ")
+                        .font(.headline)
+                    
+                    Stepper("\(sleepAmount.formatted()) hours of sleep", value: $sleepAmount, in: 4...12, step: 0.25)
+                }
+                
+                VStack(alignment: .leading, spacing: 0) {
+                    Text("How Many cups of ☕️?")
+                        .font(.headline)
+                    Stepper(coffeeAmount == 1 ? "☕️:  1":"☕️'s: \(coffeeAmount.formatted())", value: $coffeeAmount, in: 1...11)
+                }
+                
+                
+        
                             .alert(alertTitle,isPresented: $showingAlert) {
                                 Button("Ok") {}
                             } message: {
                                 Text(alertMessage)
                             }
+                            .navigationTitle("BetterRest")
+                           .navigationBarTitleDisplayMode(.inline)
+                           .toolbar {
+                               Button("Calculate", action: calculateBedTime)
+                                   .buttonStyle(.bordered)
+                                   .foregroundColor(.white)
+                                   .background(.blue)
+                                   .clipShape(Capsule())
                     }
                     .padding()
-                }
-            }
-            .navigationTitle("BetterRest")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                Button("Calculate", action: calculateBedTime)
-                    .buttonStyle(.bordered)
-                    .foregroundColor(.white)
-                    .background(.blue)
-                    .clipShape(Capsule())
+                
+            
+           
             }
         }
     }
