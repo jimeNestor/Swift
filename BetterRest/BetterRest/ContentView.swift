@@ -65,6 +65,7 @@ struct ContentView: View {
                                 .tag(Double(cupsOfCoffee))
                         }
                     }
+                    .pickerStyle(MenuPickerStyle())
                 }
     
                 Section{
