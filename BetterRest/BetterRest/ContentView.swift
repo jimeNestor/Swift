@@ -49,6 +49,8 @@ struct ContentView: View {
              
              */
             Form {
+                
+                
                 Section("What Time Would you like to wake up?"){
                     DatePicker("Pick Wake Up Time", selection: $wakeUp, displayedComponents: .hourAndMinute)
                         .labelsHidden()
@@ -57,15 +59,25 @@ struct ContentView: View {
                     Stepper("\(sleepAmount.formatted()) hours of sleep", value: $sleepAmount, in: 4...12, step: 0.25)
                 }
                 Section("How Many cups of ☕️?") {
-                    Stepper(coffeeAmount == 1 ? "☕️:  1":"☕️'s: \(coffeeAmount.formatted())", value: $coffeeAmount, in: 1...11)
+                    Picker( coffeeAmount == 1 ? "☕️" : "☕️'s", selection: $coffeeAmount) {
+                        ForEach(1..<21) { cupsOfCoffee in
+                            Text("\(cupsOfCoffee)")
+                                .tag(Double(cupsOfCoffee))
+                        }
+                    }
                 }
     
-                Text("BedTime: \(calculateBedTime())")
-                    .font(.headline)
-                                
+                Section{
+                    Text("BedTime: \(calculateBedTime())")
+                        .font(.headline)
+                }
+                
+              
+                
             }
+            
                     .padding()
-
+                    .background(Color.brown)
 //                    .alert(alertTitle,isPresented: $showingAlert) {
 //                                              Button("Ok") {}
 //                                          } message: {
@@ -73,6 +85,7 @@ struct ContentView: View {
 //                                          }
                                           .navigationTitle("BetterRest")
                                          .navigationBarTitleDisplayMode(.inline)
+            
 //                                         .toolbar {
 //                                             Button("Calculate", action: calculateBedTime)
 //                                                 .buttonStyle(.bordered)
