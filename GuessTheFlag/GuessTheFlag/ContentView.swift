@@ -34,11 +34,12 @@ struct FlagImage: View {
 
 
 struct ContentView: View {
+    @State private var showSpin = false
     @State private var showingAlert = false
     @State private var finalAlert = false
     @State private var incorrectAnswer = 0
     @State private var correctAnswer = Int.random(in: 0...2) //Randomly picks number so we decide which country flag should be tapped
-    @State private var scoreTitle = ""
+    @State private var scoreTitle: Bool = false
     @State private var overAllScore = 0
     let maxNumberOfAttempts = 8
     @State private var numberOfTries = 0
@@ -75,44 +76,64 @@ struct ContentView: View {
                             .font(.largeTitle.weight(.semibold))
                         
                     }
+                    
+                    
                     ForEach(0..<3) { number in
-                                Button {
-                                    isFlagCorrect(number)
-                                } label: {
-                                    FlagImage(imageName: countries[number])
-                                    
-                                } .alert("", isPresented: $showingAlert) {
-                                    
-                                    if numberOfTries == maxNumberOfAttempts {
-                                          Button("Reset") {
-                                                showingAlert = true
-                                                askQuestion()
-                                                reset()
-                                          }
-                                   }
-                                    // if they answer correctly
-                                    else if scoreTitle == "Correct" {
-                                        Button("Correct!"){
-                                            askQuestion()
-                                        }
-                                    }
-                                    
-                                    else if scoreTitle == "Incorrect" {
-                                        Button("Try Again") {}
-                                    }
-                                } message: {
-                                    if numberOfTries == maxNumberOfAttempts {
-                                        Text("Score: \(overAllScore) out of \(maxNumberOfAttempts)")
-                                    }
-                                    if scoreTitle == "Incorrect"{
-                                        Text("Wrong! that's the flag of \(countries[incorrectAnswer]) ")
-                                    } else{
-                                        Text("Good job!")
-                                    }
+                        
+                        Button {
+                            isFlagCorrect(number)
+                            //explicit animation, this is just worried about the state change, it will make a smooth animation that takes 2 seconds to complete
+                            withAnimation(.smooth(duration: 2)) {
+                                showSpin.toggle()
+                            }
+                            
+                         
 
+                        }  label: {
+                            FlagImage(imageName: countries[number])
+                            //this animation will show to rotate the correct flag selected 360 degrees
+                            //here we check for the correct answer is select and if showSpin is true. 
+                                .rotationEffect(correctAnswer == number && scoreTitle && showSpin ? /*@START_MENU_TOKEN@*/.zero/*@END_MENU_TOKEN@*/ : Angle(degrees: 360.0), anchor: /*@START_MENU_TOKEN@*/.center/*@END_MENU_TOKEN@*/)
+                            
+                        } .alert("", isPresented: $showingAlert) {
+                            
+                            if numberOfTries == maxNumberOfAttempts {
+                                Button("Reset") {
+                                    showingAlert = true
+                                    askQuestion()
+                                    reset()
                                 }
-                  
+                            }
+                            // if they answer correctly
+                            else if scoreTitle {
+                                Button("Correct!"){
+                                    askQuestion()
+                                }
+                            }
+                            
+                            else if !scoreTitle  {
+                                Button("Try Again") {}
+                            }
+                        } message: {
+                            if numberOfTries == maxNumberOfAttempts {
+                                Text("Score: \(overAllScore) out of \(maxNumberOfAttempts)")
+                            }
+                            if !scoreTitle {
+                                Text("Wrong! that's the flag of \(countries[incorrectAnswer]) ")
+                            } else{
+                                Text("Good job!")
+                            }
+                            
+                        }
+
+                        
+                        
                     }
+                    
+                    
+                
+                    
+                   
                 }
                 
                 .frame(maxWidth: .infinity)
@@ -145,14 +166,14 @@ struct ContentView: View {
     func isFlagCorrect(_ number: Int){
     
         if number == correctAnswer {
-            scoreTitle = "Correct"
+            scoreTitle = true
             if numberOfTries < maxNumberOfAttempts {
                 attemptMade()
             }
             correctAnswerGiven()
         }
         else {
-            scoreTitle = "Incorrect"
+            scoreTitle = false
             incorrectAnswer = number
         }
         
@@ -174,6 +195,7 @@ struct ContentView: View {
     }
     
 }
+
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
