@@ -34,9 +34,12 @@ struct FlagImage: View {
 
 
 struct ContentView: View {
+    //animation properties
+    @State private var didntPick = false
     @State private var showSpin = false
     @State private var showingAlert = false
     @State private var finalAlert = false
+    
     @State private var incorrectAnswer = 0
     @State private var correctAnswer = Int.random(in: 0...2) //Randomly picks number so we decide which country flag should be tapped
     @State private var scoreTitle: Bool = false
@@ -44,6 +47,16 @@ struct ContentView: View {
     let maxNumberOfAttempts = 8
     @State private var numberOfTries = 0
     @State private var countries = ["Estonia", "France", "Germany", "Ireland", "Italy", "Monaco", "Nigeria", "Poland", "Russia", "Spain", "UK", "US"].shuffled()
+    
+    
+    
+    var tap: some Gesture {
+        TapGesture(count: 1)
+            .onEnded { Void in
+                didntPick.toggle()
+            }
+    }
+    
     
     
     var body: some View {
@@ -83,19 +96,38 @@ struct ContentView: View {
                         Button {
                             isFlagCorrect(number)
                             //explicit animation, this is just worried about the state change, it will make a smooth animation that takes 2 seconds to complete
-                            withAnimation(.smooth(duration: 2)) {
+                            withAnimation(.linear(duration: 0.7)) {
                                 showSpin.toggle()
                             }
                             
-                         
+                            withAnimation(.easeInOut(duration: 0.9)) {
+                                didntPick.toggle()
+                            }
+                            
+                            //explicit Animation for the wrong answer's after the correct has been tapped.
+//                            withAnimation(.smooth(duration: 1)) {
+//                                disappearWrong.toggle()
+//                            }
+//                         
 
                         }  label: {
                             FlagImage(imageName: countries[number])
                             //this animation will show to rotate the correct flag selected 360 degrees
-                            //here we check for the correct answer is select and if showSpin is true. 
-                                .rotationEffect(correctAnswer == number && scoreTitle && showSpin ? /*@START_MENU_TOKEN@*/.zero/*@END_MENU_TOKEN@*/ : Angle(degrees: 360.0), anchor: /*@START_MENU_TOKEN@*/.center/*@END_MENU_TOKEN@*/)
+                            //here we check for the correct answer is select and if showSpin is true.
+                             
+                                
+                                .rotation3DEffect(correctAnswer == number && scoreTitle && showSpin ? .zero : Angle(degrees: 360.0),  axis: (x: 0.0, y: 1.0, z: 0.0))
                             
-                        } .alert("", isPresented: $showingAlert) {
+                                .opacity(didntPick ? 0.25 : 1.0)
+                            
+                                
+                              
+                            
+                                
+                              
+                        }
+                      
+                        .alert("", isPresented: $showingAlert) {
                             
                             if numberOfTries == maxNumberOfAttempts {
                                 Button("Reset") {
@@ -160,20 +192,27 @@ struct ContentView: View {
     func askQuestion() {
         countries.shuffle()
         correctAnswer = Int.random(in: 0...2)
+        
     }
     
     
     func isFlagCorrect(_ number: Int){
     
         if number == correctAnswer {
-            scoreTitle = true
+            
+            withAnimation {
+                scoreTitle = true
+                didntPick = true
+            }
+            
             if numberOfTries < maxNumberOfAttempts {
                 attemptMade()
             }
             correctAnswerGiven()
         }
         else {
-            scoreTitle = false
+           // didntPick = false
+            scoreTitle = true
             incorrectAnswer = number
         }
         
