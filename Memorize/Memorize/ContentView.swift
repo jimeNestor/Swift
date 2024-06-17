@@ -9,13 +9,13 @@ import SwiftUI
 
 struct ContentView: View {
     var carTheme = ["🚗", "🚙", "🏎️", "🚖", "🚓", "🚙", "🚗", "🏎️", "🚖", "🚓"]
+    var fruitTheme = ["🍒", "🍓", "🍇", "🍎", "🍎","🍒", "🍓", "🍇", "🍎", "🍎"]
+    var sportTheme = ["⚽️", "🏈", "⚾️", "🥎", "🏐", "⚽️", "🏈", "⚾️", "🥎", "🏐"]
+
+    @State var selectedTheme : Array<String>  = []
     var cardCount =  10
-    var fruitTheme = ["🍒", "🍓", "🍇", "🍎", "🍎"]
-    var sportTheme = ["⚽️", "🏈", "⚾️", "🥎", "🏐"]
-@State var selectedTheme = [String]()
 
     var body: some View {
-        
         VStack {
             appTitle
             VStack {
@@ -26,33 +26,52 @@ struct ContentView: View {
             }
         }
         themeLayout
+            .padding()
     }
     
     
     //Creates all cards by using CardView
     var Card: some View {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: 75))]) {
-            ForEach(0..<cardCount, id: \.self){ index in
-               CardView(theme: carTheme[index])
-                    .aspectRatio(2/4, contentMode: .fit)
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 92))]) {
+            if !selectedTheme.isEmpty {
+                ForEach(0..<cardCount, id: \.self){ index in
+                    CardView(theme: selectedTheme[index])
+                        .aspectRatio(2/3, contentMode: .fit)
+                }
             }
-        } .foregroundStyle(.teal)
+        }
     }
+    
     var carThemeButton: some View {
-        themeButtonCreator(selectedTheme: carTheme, buttonTheme: "car", themeName: "car")
+        Button(action: {
+            selectedTheme = themeSetter(selected: "car")
+        }, label: {
+            themeButtonCreator(buttonTheme: "car", themeName: "car")
+        })
     }
     
     var fruitThemeButton: some View {
-       themeButtonCreator(selectedTheme: fruitTheme, buttonTheme: "takeoutbag.and.cup.and.straw.fill", themeName: "fruits")
+        Button(action: {
+            selectedTheme =  themeSetter(selected: "fruit")
+        }, label: {
+                themeButtonCreator(buttonTheme: "takeoutbag.and.cup.and.straw.fill", themeName: "fruits")
+        })
     }
     
     var sportThemeButton: some View {
-        themeButtonCreator(selectedTheme: sportTheme, buttonTheme: "figure.jumprope", themeName: "sport")
+        Button(action: {
+            selectedTheme = themeSetter(selected: "sport").shuffled()
+        }, label: {
+            themeButtonCreator(buttonTheme: "figure.jumprope", themeName: "sport")
+        })
     }
     
     var themeLayout: some View {
         HStack {
             carThemeButton
+                .onTapGesture {
+                   selectedTheme = themeSetter(selected: "car")
+                }
             Spacer()
             fruitThemeButton
             Spacer()
@@ -68,7 +87,23 @@ struct ContentView: View {
             .bold()
     }
 
-    
+
+    // MARK: TODO - set overall theme
+    func themeSetter(selected: String) -> [String] {
+        switch selected {
+        case "car":
+            return carTheme.shuffled()
+        case "sport":
+            return sportTheme
+        case "fruit":
+            return fruitTheme
+        default:
+            return []
+        }
+       
+    }
+
+
 }
 
 
@@ -97,22 +132,12 @@ struct CardView: View {
 }
 
 //View to create buttons for themes
-struct themeButtonCreator: View {
-    var selectedTheme: [String]
+struct themeButtonCreator: View{
     var buttonTheme: String
     var themeName: String
     
     var body: some View {
-        VStack {
-            Button(action: {
-
-            }, label: {
-                Image(systemName: buttonTheme)
-            })
-            Text(themeName)
-                .foregroundStyle(.blue)
-                .font(.footnote)
-        }
+            Label("\(themeName)", systemImage: buttonTheme)
     }
 }
 
